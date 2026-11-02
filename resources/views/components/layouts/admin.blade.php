@@ -32,14 +32,14 @@
         <!-- Brand Logo Header di Sidebar Admin -->
         <div class="flex flex-col items-center text-center space-y-2 pb-4 mb-3 border-b border-border-default shrink-0">
             <a href="{{ route('admin.dashboard') }}" class="group">
-                <x-logo variant="stacked" iconSize="h-20" textSize="h-10" />
+                <x-logo variant="stacked" iconSize="h-16 sm:h-20" textSize="h-8 sm:h-10" />
             </a>
             <span
                 class="text-[10px] font-bold uppercase bg-surface-page border border-border-default px-2.5 py-0.5 rounded-full text-text-muted">Admin
                 Portal</span>
         </div>
 
-        <!-- Sidebar Navigation & Profile -->
+        <!-- Sidebar Navigation & Profile Component -->
         <x-sidebar />
     </aside>
 
@@ -51,19 +51,11 @@
         <!-- Main Body Content Container -->
         <main class="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden">
             @if (session('toast_success'))
-                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-                    class="mb-4 p-4 bg-[#DCFCE7] border border-[#166534]/20 text-[#166534] text-xs font-bold rounded-xl flex items-center justify-between shadow-sm">
-                    <span>{{ session('toast_success') }}</span>
-                    <button @click="show = false" class="text-base font-bold">&times;</button>
-                </div>
+                <x-toast type="success" :message="session('toast_success')" />
             @endif
 
             @if (session('toast_error'))
-                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-                    class="mb-4 p-4 bg-[#FEE2E2] border border-[#991B1B]/20 text-[#991B1B] text-xs font-bold rounded-xl flex items-center justify-between shadow-sm">
-                    <span>{{ session('toast_error') }}</span>
-                    <button @click="show = false" class="text-base font-bold">&times;</button>
-                </div>
+                <x-toast type="danger" :message="session('toast_error')" />
             @endif
 
             {{ $slot }}
