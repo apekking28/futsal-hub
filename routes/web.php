@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 // -------------------------------------------------------------
 // 1. PUBLIC ROUTES (Booking Anonim & Cek Status)
 // -------------------------------------------------------------
+// ATAU jika sementara halaman beranda langsung menampilkan form booking:
 Route::get('/', [BookingController::class, 'index'])->name('booking.index');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::get('/booking/success/{code}', [BookingController::class, 'success'])->name('booking.success');
