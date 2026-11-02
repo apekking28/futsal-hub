@@ -6,12 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\District;
 use App\Models\Gor;
 use App\Models\Image;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class GorManagementController extends Controller
 {
+    protected ImageUploadService $imageService;
+
+    public function __construct(ImageUploadService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     public function index()
     {
         $gors = Gor::with(['district', 'fields', 'images'])->latest()->get();
@@ -61,7 +68,8 @@ class GorManagementController extends Controller
         ]);
 
         if ($request->hasFile('images')) {
-            $this->uploadImages($gor, $request->file('images'));
+            // Panggil Service Upload WebP (Max 5 foto untuk GOR)
+            $this->imageService->uploadAndOptimize($gor, $request->file('images'), 5);
         }
 
         return back()->with('toast_success', 'GOR baru berhasil ditambahkan!');
@@ -112,33 +120,28 @@ class GorManagementController extends Controller
         ]);
 
         if ($request->hasFile('images')) {
-            $this->uploadImages($gor, $request->file('images'));
+            $this->imageService->uploadAndOptimize($gor, $request->file('images'), 5);
         }
 
         return back()->with('toast_success', 'Data GOR berhasil diperbarui!');
     }
 
-    /**
-     * Upload Foto Khusus dari Modal Galeri Foto GOR
-     */
     public function storeImages(Request $request, $id)
     {
         $request->validate([
             'images'   => 'required|array|min:1',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
-        ], [
-            'images.required' => 'Pilih minimal satu foto untuk diunggah!',
         ]);
 
         $gor = Gor::findOrFail($id);
 
         if ($gor->images()->count() >= 5) {
-            return back()->with('toast_error', 'Gagal! Jumlah foto untuk GOR ini sudah mencapai batas maksimal (5 foto).');
+            return back()->with('toast_error', 'Gagal! Foto GOR sudah mencapai batas maksimal (5 foto).');
         }
 
-        $this->uploadImages($gor, $request->file('images'));
+        $this->imageService->uploadAndOptimize($gor, $request->file('images'), 5);
 
-        return back()->with('toast_success', 'Foto galeri GOR berhasil ditambahkan!');
+        return back()->with('toast_success', 'Foto galeri GOR berhasil diunggah!');
     }
 
     public function setCover($gorId, $imageId)
@@ -155,15 +158,7 @@ class GorManagementController extends Controller
     public function deleteImage($imageId)
     {
         $image = Image::findOrFail($imageId);
-
-        if (Storage::disk('public')->exists($image->path)) {
-            Storage::disk('public')->delete($image->path);
-        }
-        if ($image->thumb_path && Storage::disk('public')->exists($image->thumb_path)) {
-            Storage::disk('public')->delete($image->thumb_path);
-        }
-
-        $image->delete();
+        $this->imageService->deleteImage($image);
 
         return back()->with('toast_success', 'Foto berhasil dihapus!');
     }
@@ -181,40 +176,11 @@ class GorManagementController extends Controller
         }
 
         foreach ($gor->images as $img) {
-            if (Storage::disk('public')->exists($img->path)) {
-                Storage::disk('public')->delete($img->path);
-            }
-            if ($img->thumb_path && Storage::disk('public')->exists($img->thumb_path)) {
-                Storage::disk('public')->delete($img->thumb_path);
-            }
-            $img->delete();
+            $this->imageService->deleteImage($img);
         }
 
         $gor->delete();
 
         return back()->with('toast_success', 'Data GOR berhasil dihapus!');
-    }
-
-    private function uploadImages(Gor $gor, array $files)
-    {
-        $existingCount = $gor->images()->count();
-        $isFirst = $existingCount === 0;
-
-        foreach ($files as $index => $file) {
-            if ($existingCount >= 5) break;
-
-            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('gors', $filename, 'public');
-
-            $gor->images()->create([
-                'path'       => $path,
-                'thumb_path' => $path,
-                'alt_text'   => $gor->name . ' - foto ' . ($existingCount + 1),
-                'is_cover'   => $isFirst && $index === 0,
-                'sort_order' => $existingCount + 1,
-            ]);
-
-            $existingCount++;
-        }
     }
 }
