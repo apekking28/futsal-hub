@@ -9,128 +9,68 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
-        [x-cloak] {
-            display: none !important;
-        }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
 
-<body class="bg-surface-page text-text-default font-sans antialiased min-h-screen flex">
+<body class="bg-surface-page text-text-default font-sans antialiased min-h-screen flex" x-data="{ sidebarOpen: false }">
 
-    <!-- Sidebar Navigation -->
-    <aside
-        class="w-64 bg-surface-card border-r border-border-default flex flex-col justify-between hidden md:flex shrink-0 min-h-screen">
-        <div class="p-6 space-y-8">
-            <!-- Brand Logo -->
-            <div class="flex items-center gap-2">
-                <a href="{{ route('admin.dashboard') }}"
-                    class="text-2xl font-black text-action-primary tracking-tight flex items-center gap-2">
-                    Futsal<span class="text-text-default">Hub</span>
-                    <span
-                        class="text-[10px] font-bold uppercase bg-surface-page border border-border-default px-1.5 py-0.5 rounded text-text-muted">Admin</span>
-                </a>
-            </div>
+    <!-- Mobile Overlay Backdrop -->
+    <div x-show="sidebarOpen"
+         x-transition:enter="transition-opacity ease-linear duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="sidebarOpen = false"
+         class="fixed inset-0 z-40 bg-black/50 md:hidden" x-cloak></div>
 
-            <!-- Navigation Links -->
-            <nav class="space-y-1.5">
-                <!-- Dashboard -->
-                @hasanyrole('super-admin|admin-gor')
-                    <a href="{{ route('admin.dashboard') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors {{ request()->routeIs('admin.dashboard') ? 'bg-action-primary text-white shadow-sm' : 'text-text-muted hover:bg-surface-page hover:text-text-default' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                        Dashboard
-                    </a>
-                @endhasanyrole
+    <!-- Sidebar Navigation Drawer Mobile & Fixed Desktop -->
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
+        class="fixed md:sticky top-0 inset-y-0 left-0 z-50 h-screen w-64 bg-surface-card border-r border-border-default flex flex-col justify-between transition-transform duration-200 ease-in-out shrink-0 p-5 overflow-hidden">
 
-                <!-- Kelola Booking (Semua Staff: Super Admin, Admin GOR, Kasir) -->
-                <a href="{{ route('admin.bookings.index') }}"
-                    class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors {{ request()->routeIs('admin.bookings.*') ? 'bg-action-primary text-white shadow-sm' : 'text-text-muted hover:bg-surface-page hover:text-text-default' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    Kelola Booking
-                </a>
-
-                <!-- Kelola Lapangan (Super Admin & Admin GOR) -->
-                @hasanyrole('super-admin|admin-gor')
-                    <a href="{{ route('admin.fields.index') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors {{ request()->routeIs('admin.fields.*') ? 'bg-action-primary text-white shadow-sm' : 'text-text-muted hover:bg-surface-page hover:text-text-default' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
-                        Kelola Lapangan
-                    </a>
-                @endhasanyrole
-
-                <!-- Kelola GOR (Khusus Super Admin) -->
-                @role('super-admin')
-                    <a href="{{ route('admin.gors.index') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors {{ request()->routeIs('admin.gors.*') ? 'bg-action-primary text-white shadow-sm' : 'text-text-muted hover:bg-surface-page hover:text-text-default' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                        Kelola GOR
-                    </a>
-
-                    <!-- Manajemen User & RBAC -->
-                    <a href="{{ route('admin.users.index') }}"
-                        class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors {{ request()->routeIs('admin.users.*') ? 'bg-action-primary text-white shadow-sm' : 'text-text-muted hover:bg-surface-page hover:text-text-default' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        Manajemen User
-                    </a>
-                @endrole
-            </nav>
+        <!-- Brand Logo Header -->
+        <div class="flex flex-col items-center text-center space-y-2 pb-4 mb-3 border-b border-border-default shrink-0">
+            <a href="{{ route('admin.dashboard') }}" class="group">
+                <x-logo variant="stacked" iconSize="h-14" textSize="h-7" />
+            </a>
+            <span class="text-[10px] font-bold uppercase bg-surface-page border border-border-default px-2.5 py-0.5 rounded-full text-text-muted">Admin Portal</span>
         </div>
 
-        <!-- User Info & Logout Button -->
-        <div class="p-6 border-t border-border-default space-y-4">
-            <div class="space-y-0.5">
-                <p class="text-xs font-bold text-text-default truncate">{{ auth()->user()->name ?? 'User Staff' }}</p>
-                <p class="text-[11px] text-text-muted truncate">{{ auth()->user()->email ?? '' }}</p>
-            </div>
-
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit"
-                    class="w-full text-left text-xs font-bold text-status-danger-text hover:underline transition-all">
-                    Keluar Aplikasi
-                </button>
-            </form>
-        </div>
+        <!-- Single Sidebar Component (Nav Links & Sticky User Profile) -->
+        <x-sidebar />
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
         <!-- Header Topbar -->
-        <header
-            class="h-16 bg-surface-card border-b border-border-default flex items-center justify-between px-6 shrink-0">
-            <h1 class="text-lg font-bold text-text-default">{{ $headerTitle ?? 'Dashboard Admin' }}</h1>
+        <header class="h-16 bg-surface-card border-b border-border-default flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-30">
+            <div class="flex items-center gap-3">
+                <!-- Hamburger Button (Mobile Only) -->
+                <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-text-default md:hidden rounded-lg hover:bg-surface-page border border-border-default">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <h1 class="text-base sm:text-lg font-bold text-text-default truncate">{{ $headerTitle ?? 'Dashboard Admin' }}</h1>
+            </div>
 
             <div class="flex items-center gap-3">
-                <span class="text-xs font-semibold text-text-muted">
+                <span class="text-xs font-semibold text-text-muted bg-surface-page px-2.5 py-1 rounded-lg border border-border-default">
                     @if (auth()->user()?->hasRole('super-admin'))
-                        Super Admin Mode
+                        Super Admin
                     @elseif(auth()->user()?->hasRole('admin-gor'))
-                        Admin GOR Mode
+                        Admin GOR
                     @else
-                        Kasir Mode
+                        Kasir
                     @endif
                 </span>
             </div>
         </header>
 
         <!-- Main Body Content -->
-        <main class="p-6 flex-1 overflow-y-auto">
-            <!-- Toast Flash Notification -->
+        <main class="p-4 sm:p-6 flex-1 overflow-y-auto">
             @if (session('toast_success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
                     class="mb-4 p-4 bg-[#DCFCE7] border border-[#166534]/20 text-[#166534] text-xs font-bold rounded-xl flex items-center justify-between shadow-sm">

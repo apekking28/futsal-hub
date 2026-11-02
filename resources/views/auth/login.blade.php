@@ -8,14 +8,16 @@
 </head>
 <body class="h-full flex items-center justify-center p-4">
 
-    <div class="w-full max-w-md bg-surface-card border border-border-default rounded-xl p-6 shadow-sm">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-black text-action-primary tracking-tight">Futsal<span class="text-text-default">Hub</span></h1>
-            <p class="text-xs text-text-muted mt-1">Portal Super Admin, Admin GOR & Kasir</p>
+    <div class="w-full max-w-md bg-surface-card border border-border-default rounded-2xl p-8 shadow-sm space-y-6">
+        <!-- Logo Vertikal: Icon Besar di Atas, Text di Bawah -->
+        <div class="text-center flex flex-col items-center justify-center space-y-3">
+            <img src="{{ asset('images/logo-icon.png') }}" alt="FutsalHub Icon" class="h-24 w-auto">
+            <img src="{{ asset('images/logo-text.png') }}" alt="FutsalHub" class="h-10 w-auto">
+            <p class="text-xs font-medium text-text-muted">Portal Super Admin, Admin GOR & Kasir</p>
         </div>
 
         @if ($errors->any())
-            <div class="mb-4 p-3 bg-status-danger-bg text-status-danger-text text-sm rounded-lg">
+            <div class="p-3.5 bg-status-danger-bg text-status-danger-text text-xs font-bold rounded-xl">
                 {{ $errors->first() }}
             </div>
         @endif
@@ -24,27 +26,27 @@
             @csrf
 
             <div>
-                <label class="block text-xs font-semibold uppercase text-text-muted mb-1">Email Staff</label>
+                <label class="block text-xs font-bold uppercase text-text-muted mb-1">Email Staff</label>
                 <input type="email" name="email" value="{{ old('email') }}" required autofocus
-                       class="w-full px-4 py-2.5 rounded-lg border border-border-default focus:ring-2 focus:ring-action-primary outline-none">
+                       class="w-full px-4 py-2.5 rounded-xl border border-border-default focus:ring-2 focus:ring-action-primary outline-none text-sm">
             </div>
 
             <div>
-                <label class="block text-xs font-semibold uppercase text-text-muted mb-1">Password</label>
+                <label class="block text-xs font-bold uppercase text-text-muted mb-1">Password</label>
                 <input type="password" name="password" required
-                       class="w-full px-4 py-2.5 rounded-lg border border-border-default focus:ring-2 focus:ring-action-primary outline-none">
+                       class="w-full px-4 py-2.5 rounded-xl border border-border-default focus:ring-2 focus:ring-action-primary outline-none text-sm">
             </div>
 
-            <button type="submit" class="w-full py-3 bg-action-primary hover:bg-action-primary-hover text-white font-bold rounded-lg transition-colors">
+            <button type="submit" class="w-full py-3 bg-action-primary hover:bg-action-primary-hover text-white font-bold text-sm rounded-xl transition-all shadow-sm">
                 Masuk ke System
             </button>
         </form>
 
-        <div class="mt-6 pt-4 border-t border-border-default text-xs text-text-muted space-y-1">
-            <p class="font-bold">Akun Testing (dari Seeder):</p>
-            <p>• Super Admin: <code class="text-action-primary">admin@futsalhub.id</code> / <code class="text-action-primary">password123</code></p>
-            <p>• Admin GOR: <code class="text-action-primary">admin.cfc@futsalhub.id</code> / <code class="text-action-primary">password123</code></p>
-            <p>• Kasir: <code class="text-action-primary">kasir.cfc@futsalhub.id</code> / <code class="text-action-primary">password123</code></p>
+        <div class="pt-4 border-t border-border-default text-xs text-text-muted space-y-1">
+            <p class="font-bold text-text-default">Akun Testing (dari Seeder):</p>
+            <p>• Super Admin: <code class="text-action-primary font-mono font-bold">admin@futsalhub.id</code> / <code class="text-action-primary font-mono font-bold">password123</code></p>
+            <p>• Admin GOR: <code class="text-action-primary font-mono font-bold">admin.cfc@futsalhub.id</code> / <code class="text-action-primary font-mono font-bold">password123</code></p>
+            <p>• Kasir: <code class="text-action-primary font-mono font-bold">kasir.cfc@futsalhub.id</code> / <code class="text-action-primary font-mono font-bold">password123</code></p>
         </div>
     </div>
 
