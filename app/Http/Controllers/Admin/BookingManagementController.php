@@ -148,20 +148,35 @@ class BookingManagementController extends Controller
     /**
      * Re-Update Status Booking & Pembayaran jika Terjadi Kesalahan Input
      */
-    public function updateStatus(Request $request, $id)
+   public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'payment_status' => 'required|in:pending,approved,rejected',
-            'booking_status' => 'required|in:reserved,confirmed,completed,cancelled',
+            'payment_status'      => 'required|in:pending,approved,rejected,cancelled',
+            'booking_status'      => 'required|in:reserved,confirmed,completed,cancelled',
+            'rejection_reason'    => 'nullable|required_if:payment_status,rejected|string|max:255',
+            'cancellation_reason' => 'nullable|required_if:booking_status,cancelled|required_if:payment_status,cancelled|string|max:255',
+        ], [
+            'rejection_reason.required_if'    => 'Wajib mengisi alasan penolakan pembayaran.',
+            'cancellation_reason.required_if' => 'Wajib mengisi alasan pembatalan booking.',
         ]);
 
         $booking = Booking::findOrFail($id);
 
-        $booking->update([
+        $updateData = [
             'payment_status' => $request->payment_status,
             'booking_status' => $request->booking_status,
-        ]);
+        ];
 
-        return back()->with('toast_success', 'Status transaksi '.$booking->booking_code.' berhasil dikoreksi!');
+        if ($request->payment_status === 'rejected') {
+            $updateData['rejection_reason'] = $request->rejection_reason;
+        }
+
+        if ($request->booking_status === 'cancelled' || $request->payment_status === 'cancelled') {
+            $updateData['cancellation_reason'] = $request->cancellation_reason;
+        }
+
+        $booking->update($updateData);
+
+        return back()->with('toast_success', 'Status transaksi ' . $booking->booking_code . ' berhasil dikoreksi!');
     }
 }
