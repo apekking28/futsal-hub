@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CheckBookingController;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -28,7 +29,6 @@ Route::get('/booking/slots', [BookingController::class, 'getSlots'])->name('book
 Route::get('/cek-booking', [CheckBookingController::class, 'index'])->name('booking.check');
 Route::post('/cek-booking/{id}/upload', [CheckBookingController::class, 'uploadProof'])->name('booking.upload_proof');
 
-
 // =========================================================================
 // 2. AUTHENTICATION ROUTES (Login & Logout Staff / Admin)
 // =========================================================================
@@ -41,7 +41,6 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-
 // =========================================================================
 // 3. ADMIN & KASIR ROUTES (Perlu Autentikasi Staff / Pengelola GOR)
 // =========================================================================
@@ -51,7 +50,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Redirection Handler (Kasir -> Bookings, Super Admin/Admin GOR -> Dashboard)
     // ---------------------------------------------------------------------
     Route::get('/', function () {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
         if ($user && $user->hasRole('kasir')) {
             return redirect()->route('admin.bookings.index');
@@ -112,5 +111,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
     });
+
+   Route::middleware(['role:super-admin'])->group(function () {
+    Route::get('/gors', [GorManagementController::class, 'index'])->name('gors.index');
+    Route::post('/gors', [GorManagementController::class, 'store'])->name('gors.store');
+    Route::put('/gors/{id}', [GorManagementController::class, 'update'])->name('gors.update');
+    Route::delete('/gors/{id}', [GorManagementController::class, 'destroy'])->name('gors.destroy');
+
+    // Route Upload Galeri Foto Modal GOR
+    Route::post('/gors/{id}/images', [GorManagementController::class, 'storeImages'])->name('gors.images.store');
+    Route::post('/gors/{gor}/images/{image}/set-cover', [GorManagementController::class, 'setCover'])->name('gors.images.set-cover');
+    Route::delete('/gors/images/{image}', [GorManagementController::class, 'deleteImage'])->name('gors.images.destroy');
+});
 
 });
