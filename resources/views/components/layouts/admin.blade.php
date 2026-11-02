@@ -13,7 +13,7 @@
     </style>
 </head>
 
-<body class="bg-surface-page text-text-default font-sans antialiased min-h-screen flex" x-data="{ sidebarOpen: false }">
+<body class="bg-surface-page text-text-default font-sans antialiased min-h-screen flex overflow-x-hidden" x-data="{ sidebarOpen: false }">
 
     <!-- Mobile Overlay Backdrop -->
     <div x-show="sidebarOpen"
@@ -26,7 +26,7 @@
          @click="sidebarOpen = false"
          class="fixed inset-0 z-40 bg-black/50 md:hidden" x-cloak></div>
 
-    <!-- Sidebar Navigation Drawer Mobile & Fixed Desktop -->
+    <!-- Sidebar Component Container -->
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
         class="fixed md:sticky top-0 inset-y-0 left-0 z-50 h-screen w-64 bg-surface-card border-r border-border-default flex flex-col justify-between transition-transform duration-200 ease-in-out shrink-0 p-5 overflow-hidden">
 
@@ -38,39 +38,17 @@
             <span class="text-[10px] font-bold uppercase bg-surface-page border border-border-default px-2.5 py-0.5 rounded-full text-text-muted">Admin Portal</span>
         </div>
 
-        <!-- Single Sidebar Component (Nav Links & Sticky User Profile) -->
+        <!-- Sidebar Navigation & Profile -->
         <x-sidebar />
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
-        <!-- Header Topbar -->
-        <header class="h-16 bg-surface-card border-b border-border-default flex items-center justify-between px-4 sm:px-6 shrink-0 sticky top-0 z-30">
-            <div class="flex items-center gap-3">
-                <!-- Hamburger Button (Mobile Only) -->
-                <button @click="sidebarOpen = !sidebarOpen" class="p-2 text-text-default md:hidden rounded-lg hover:bg-surface-page border border-border-default">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                    </svg>
-                </button>
-                <h1 class="text-base sm:text-lg font-bold text-text-default truncate">{{ $headerTitle ?? 'Dashboard Admin' }}</h1>
-            </div>
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
+        <!-- Component Topbar Modular -->
+        <x-layouts.topbars.admin-header :headerTitle="$headerTitle ?? 'Dashboard Admin'" />
 
-            <div class="flex items-center gap-3">
-                <span class="text-xs font-semibold text-text-muted bg-surface-page px-2.5 py-1 rounded-lg border border-border-default">
-                    @if (auth()->user()?->hasRole('super-admin'))
-                        Super Admin
-                    @elseif(auth()->user()?->hasRole('admin-gor'))
-                        Admin GOR
-                    @else
-                        Kasir
-                    @endif
-                </span>
-            </div>
-        </header>
-
-        <!-- Main Body Content -->
-        <main class="p-4 sm:p-6 flex-1 overflow-y-auto">
+        <!-- Main Body Content Container -->
+        <main class="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden">
             @if (session('toast_success'))
                 <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
                     class="mb-4 p-4 bg-[#DCFCE7] border border-[#166534]/20 text-[#166534] text-xs font-bold rounded-xl flex items-center justify-between shadow-sm">
