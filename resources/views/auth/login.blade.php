@@ -43,16 +43,6 @@
                 Masuk ke System
             </button>
         </form>
-
-        <div class="pt-4 border-t border-border-default text-xs text-text-muted space-y-1">
-            <p class="font-bold text-text-default">Akun Testing (dari Seeder):</p>
-            <p>• Super Admin: <code class="text-action-primary font-mono font-bold">admin@futsalhub.id</code> / <code
-                    class="text-action-primary font-mono font-bold">password123</code></p>
-            <p>• Admin GOR: <code class="text-action-primary font-mono font-bold">admin.cfc@futsalhub.id</code> / <code
-                    class="text-action-primary font-mono font-bold">password123</code></p>
-            <p>• Kasir: <code class="text-action-primary font-mono font-bold">kasir.cfc@futsalhub.id</code> / <code
-                    class="text-action-primary font-mono font-bold">password123</code></p>
-        </div>
     </div>
 
 </body>
