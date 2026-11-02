@@ -4,6 +4,8 @@ use App\Http\Controllers\Admin\BookingManagementController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FieldManagementController;
 use App\Http\Controllers\Admin\GorManagementController;
+use App\Http\Controllers\Admin\PermissionManagementController;
+use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
@@ -90,13 +92,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('/fields/{id}', [FieldManagementController::class, 'update'])->name('fields.update');
         Route::delete('/fields/{id}', [FieldManagementController::class, 'destroy'])->name('fields.destroy');
 
-        // Pengelolaan Foto/Galeri Lapangan (Support Addendum & Polymorphic Image)
+        // Pengelolaan Foto/Galeri Lapangan (Support WebP & Polymorphic Image)
         Route::post('/fields/{field}/images/{image}/set-cover', [FieldManagementController::class, 'setCover'])->name('fields.images.set-cover');
         Route::delete('/images/{image}', [FieldManagementController::class, 'deleteImage'])->name('images.destroy');
     });
 
     // ---------------------------------------------------------------------
-    // Akses Utama Platform & RBAC (Khusus Super Admin)
+    // Akses Utama Platform & RBAC System (Khusus Super Admin)
     // ---------------------------------------------------------------------
     Route::middleware(['role:super-admin'])->group(function () {
         // CRUD Manajemen GOR
@@ -105,23 +107,28 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::put('/gors/{id}', [GorManagementController::class, 'update'])->name('gors.update');
         Route::delete('/gors/{id}', [GorManagementController::class, 'destroy'])->name('gors.destroy');
 
-        // CRUD Manajemen User (Kasir/Admin GOR)
+        // Pengelolaan Foto/Galeri GOR
+        Route::post('/gors/{id}/images', [GorManagementController::class, 'storeImages'])->name('gors.images.store');
+        Route::post('/gors/{gor}/images/{image}/set-cover', [GorManagementController::class, 'setCover'])->name('gors.images.set-cover');
+        Route::delete('/gors/images/{image}', [GorManagementController::class, 'deleteImage'])->name('gors.images.destroy');
+
+        // CRUD Manajemen User (Kasir / Admin GOR / Staff)
         Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
         Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
         Route::put('/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+
+        // CRUD Manajemen Role
+        Route::get('/roles', [RoleManagementController::class, 'index'])->name('roles.index');
+        Route::post('/roles', [RoleManagementController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{id}', [RoleManagementController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{id}', [RoleManagementController::class, 'destroy'])->name('roles.destroy');
+
+        // CRUD Manajemen Permission
+        Route::get('/permissions', [PermissionManagementController::class, 'index'])->name('permissions.index');
+        Route::post('/permissions', [PermissionManagementController::class, 'store'])->name('permissions.store');
+        Route::put('/permissions/{id}', [PermissionManagementController::class, 'update'])->name('permissions.update');
+        Route::delete('/permissions/{id}', [PermissionManagementController::class, 'destroy'])->name('permissions.destroy');
     });
-
-   Route::middleware(['role:super-admin'])->group(function () {
-    Route::get('/gors', [GorManagementController::class, 'index'])->name('gors.index');
-    Route::post('/gors', [GorManagementController::class, 'store'])->name('gors.store');
-    Route::put('/gors/{id}', [GorManagementController::class, 'update'])->name('gors.update');
-    Route::delete('/gors/{id}', [GorManagementController::class, 'destroy'])->name('gors.destroy');
-
-    // Route Upload Galeri Foto Modal GOR
-    Route::post('/gors/{id}/images', [GorManagementController::class, 'storeImages'])->name('gors.images.store');
-    Route::post('/gors/{gor}/images/{image}/set-cover', [GorManagementController::class, 'setCover'])->name('gors.images.set-cover');
-    Route::delete('/gors/images/{image}', [GorManagementController::class, 'deleteImage'])->name('gors.images.destroy');
-});
 
 });
