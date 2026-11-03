@@ -17,29 +17,54 @@
             </button>
         </div>
 
+        <!-- Filter & Search Bar -->
+        <div class="flex flex-col sm:flex-row justify-between gap-3">
+            <form method="GET" action="{{ route('admin.permissions.index') }}" class="flex flex-col sm:flex-row flex-1 gap-2">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama Permission..." class="w-full sm:max-w-xs px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none focus:ring-2 focus:ring-action-primary bg-surface-card text-text-default">
+                @if(request()->has('search'))
+                    <a href="{{ route('admin.permissions.index') }}" class="px-3 py-2 text-xs font-bold text-status-danger-text hover:underline flex items-center">
+                        Reset Filter
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <!-- TABEL PERMISSIONS -->
-        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden">
+        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden space-y-4">
             <div class="overflow-x-auto max-w-full">
-                <table class="w-full text-left border-collapse min-w-[750px] table-fixed">
+                <table class="w-full text-left border-collapse min-w-[900px] table-fixed">
                     <thead>
-                        <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted">
-                            <th class="p-4 w-64">Nama Permission</th>
-                            <th class="p-4 w-32">Guard</th>
-                            <th class="p-4 w-80">Digunakan oleh Role</th>
+                        <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted sticky top-0 z-10">
+                            <!-- 1. Header Nomor Diganti 'No' -->
+                            <th class="p-4 w-14 text-center">No</th>
+                            <th class="p-4 w-60">Nama Permission</th>
+                            <th class="p-4 w-28">Guard</th>
+                            <th class="p-4 w-72">Digunakan oleh Role</th>
+                            <th class="p-4 w-44">Riwayat Waktu</th>
                             <th class="p-4 w-36 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border-default text-sm">
                         @forelse($permissions as $permission)
                             <tr class="hover:bg-surface-page/50 transition-colors">
-                                <td class="p-4 font-mono text-xs font-bold text-action-primary">
+                                <!-- 2. Nomor Urut Dinamis -->
+                                <td class="p-4 text-center font-bold text-xs text-text-muted">
+                                    {{ $loop->iteration + $permissions->firstItem() - 1 }}
+                                </td>
+
+                                <!-- Nama Permission Key -->
+                                <td class="p-4 font-mono text-xs font-bold text-action-primary truncate">
                                     {{ $permission->name }}
                                 </td>
+
+                                <!-- Guard Name -->
                                 <td class="p-4 font-mono text-xs text-text-muted uppercase whitespace-nowrap">
                                     {{ $permission->guard_name }}
                                 </td>
+
+                                <!-- Roles -->
                                 <td class="p-4">
-                                    <div class="flex flex-wrap gap-1">
+                                    <div class="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
                                         @forelse($permission->roles as $role)
                                             <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-surface-page border border-border-default text-text-default">
                                                 {{ $role->name }}
@@ -49,6 +74,20 @@
                                         @endforelse
                                     </div>
                                 </td>
+
+                                <!-- Tanggal Dibuat & Tanggal Di-update -->
+                                <td class="p-4 space-y-1 text-xs">
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Dibuat:</span>
+                                        <span class="font-medium text-text-default">{{ $permission->created_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Di-update:</span>
+                                        <span class="font-medium text-text-default">{{ $permission->updated_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                </td>
+
+                                <!-- Aksi -->
                                 <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
                                     <button @click="showModal = true; editMode = true; form = { id: {{ $permission->id }}, name: '{{ addslashes($permission->name) }}' }"
                                             class="px-2.5 py-1 text-xs font-bold bg-surface-page border border-border-default rounded-lg hover:bg-border-default text-text-default transition-colors cursor-pointer">
@@ -66,12 +105,19 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="p-8 text-center text-xs text-text-muted">Belum ada permission terdaftar.</td>
+                                <td colspan="6" class="p-8 text-center text-xs text-text-muted">Belum ada permission terdaftar.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            <!-- 3. PAGINATION ANGKA LARAVEL DEFAULT -->
+            @if(method_exists($permissions, 'hasPages') && $permissions->hasPages())
+                <div class="p-4 border-t border-border-default overflow-x-auto">
+                    {{ $permissions->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- MODAL FORM (Tambah / Edit Permission) -->

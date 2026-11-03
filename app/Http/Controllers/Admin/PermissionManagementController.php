@@ -9,11 +9,20 @@ use Spatie\Permission\Models\Permission;
 class PermissionManagementController extends Controller
 {
     /**
-     * Tampilkan Daftar Permission (Khusus Super Admin)
+     * Tampilkan Daftar Permission (Filter, Search, & Pagination)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $permissions = Permission::with('roles')->latest()->get();
+        $query = Permission::with('roles');
+
+        // Filter Pencarian (Nama Permission)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Pagination 10 item per halaman + membawa query string filter
+        $permissions = $query->latest()->paginate(10)->withQueryString();
 
         return view('admin.permissions.index', compact('permissions'));
     }
@@ -30,7 +39,7 @@ class PermissionManagementController extends Controller
         ]);
 
         Permission::create([
-            'name'       => strtolower(trim($request->name)),
+            'name' => strtolower(trim($request->name)),
             'guard_name' => 'web',
         ]);
 
@@ -45,7 +54,7 @@ class PermissionManagementController extends Controller
         $permission = Permission::findOrFail($id);
 
         $request->validate([
-            'name' => 'required|string|max:100|unique:permissions,name,' . $permission->id,
+            'name' => 'required|string|max:100|unique:permissions,name,'.$permission->id,
         ]);
 
         $permission->update([

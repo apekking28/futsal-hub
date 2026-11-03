@@ -4,22 +4,32 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleManagementController extends Controller
 {
     /**
-     * Tampilkan Daftar Role & Grouped Permissions
+     * Tampilkan Daftar Role & Grouped Permissions (Filter, Search, & Pagination)
      */
-    public function index()
+    public function index(Request $request)
     {
-        $roles = Role::with('permissions')->withCount('users')->get();
+        $query = Role::with('permissions')->withCount('users');
+
+        // Filter Pencarian (Nama Role)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Pagination 10 item per halaman + membawa query string filter
+        $roles = $query->latest()->paginate(10)->withQueryString();
         $allPermissions = Permission::all();
 
         // Kelompokkan Permission berdasarkan Prefix Modul (contoh: 'fields.create' -> Group: 'fields')
         $groupedPermissions = $allPermissions->groupBy(function ($perm) {
             $parts = explode('.', $perm->name);
+
             return count($parts) > 1 ? $parts[0] : 'Lainnya';
         });
 
@@ -32,15 +42,15 @@ class RoleManagementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'          => 'required|string|max:50|unique:roles,name',
-            'permissions'   => 'nullable|array',
+            'name' => 'required|string|max:50|unique:roles,name',
+            'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,name',
         ], [
-            'name.unique'   => 'Nama role ini sudah ada.',
+            'name.unique' => 'Nama role ini sudah ada.',
         ]);
 
         $role = Role::create([
-            'name'       => strtolower(trim($request->name)),
+            'name' => strtolower(trim($request->name)),
             'guard_name' => 'web',
         ]);
 
@@ -60,13 +70,13 @@ class RoleManagementController extends Controller
 
         if (in_array($role->name, ['super-admin', 'admin-gor', 'kasir'])) {
             $request->validate([
-                'permissions'   => 'nullable|array',
+                'permissions' => 'nullable|array',
                 'permissions.*' => 'exists:permissions,name',
             ]);
         } else {
             $request->validate([
-                'name'          => 'required|string|max:50|unique:roles,name,' . $role->id,
-                'permissions'   => 'nullable|array',
+                'name' => 'required|string|max:50|unique:roles,name,'.$role->id,
+                'permissions' => 'nullable|array',
                 'permissions.*' => 'exists:permissions,name',
             ]);
 
@@ -78,7 +88,7 @@ class RoleManagementController extends Controller
         $permissions = $request->input('permissions', []);
         $role->syncPermissions($permissions);
 
-        return back()->with('toast_success', 'Hak akses role ' . $role->name . ' berhasil diperbarui!');
+        return back()->with('toast_success', 'Hak akses role '.$role->name.' berhasil diperbarui!');
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Field;
 use App\Models\Gor;
 use App\Models\Image;
+use App\Models\User;
 use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,18 +21,39 @@ class FieldManagementController extends Controller
         $this->imageService = $imageService;
     }
 
-    public function index()
+    /**
+     * Tampilan Daftar Lapangan (Filter, Search, & Pagination)
+     */
+    public function index(Request $request)
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
 
         $fieldsQuery = Field::with(['gor', 'images']);
 
+        // Scope jika login sebagai Admin GOR
         if ($user && $user->hasRole('admin-gor') && $user->gor_id) {
             $fieldsQuery->where('gor_id', $user->gor_id);
         }
 
-        $fields = $fieldsQuery->latest()->get();
+        // Filter Pencarian (Nama, Slug, Tipe)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $fieldsQuery->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('type', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Status Operasional
+        if ($request->filled('status')) {
+            $fieldsQuery->where('is_active', $request->status);
+        }
+
+        // Pagination 10 item per halaman + query string
+        $fields = $fieldsQuery->latest()->paginate(10)->withQueryString();
+
         $gors = ($user && $user->hasRole('super-admin'))
             ? Gor::all()
             : Gor::where('id', $user?->gor_id)->get();
@@ -42,32 +64,32 @@ class FieldManagementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'gor_id'         => 'required|exists:gors,id',
-            'name'           => 'required|string|max:255',
-            'type'           => 'required|string|max:100',
+            'gor_id' => 'required|exists:gors,id',
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:100',
             'price_per_hour' => 'required|numeric|min:0',
-            'is_active'      => 'required|boolean',
-            'description'    => 'nullable|string',
-            'images.*'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'is_active' => 'required|boolean',
+            'description' => 'nullable|string',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         $gor = Gor::findOrFail($request->gor_id);
 
-        $baseSlug = Str::slug($gor->name . ' ' . $request->name);
+        $baseSlug = Str::slug($gor->name.' '.$request->name);
         $slug = $baseSlug;
         $count = 1;
         while (Field::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $count++;
+            $slug = $baseSlug.'-'.$count++;
         }
 
         $field = Field::create([
-            'gor_id'         => $request->gor_id,
-            'name'           => $request->name,
-            'slug'           => $slug,
-            'type'           => strtolower($request->type),
+            'gor_id' => $request->gor_id,
+            'name' => $request->name,
+            'slug' => $slug,
+            'type' => strtolower($request->type),
             'price_per_hour' => $request->price_per_hour,
-            'is_active'      => $request->is_active,
-            'description'    => $request->description,
+            'is_active' => $request->is_active,
+            'description' => $request->description,
         ]);
 
         if ($request->hasFile('images')) {
@@ -83,30 +105,30 @@ class FieldManagementController extends Controller
         $field = Field::findOrFail($id);
 
         $request->validate([
-            'name'           => 'required|string|max:255',
-            'type'           => 'required|string|max:100',
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:100',
             'price_per_hour' => 'required|numeric|min:0',
-            'is_active'      => 'required|boolean',
-            'description'    => 'nullable|string',
-            'images.*'       => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'is_active' => 'required|boolean',
+            'description' => 'nullable|string',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         if ($field->name !== $request->name) {
-            $baseSlug = Str::slug($field->gor->name . ' ' . $request->name);
+            $baseSlug = Str::slug($field->gor->name.' '.$request->name);
             $slug = $baseSlug;
             $count = 1;
             while (Field::where('slug', $slug)->where('id', '!=', $field->id)->exists()) {
-                $slug = $baseSlug . '-' . $count++;
+                $slug = $baseSlug.'-'.$count++;
             }
             $field->slug = $slug;
         }
 
         $field->update([
-            'name'           => $request->name,
-            'type'           => strtolower($request->type),
+            'name' => $request->name,
+            'type' => strtolower($request->type),
             'price_per_hour' => $request->price_per_hour,
-            'is_active'      => $request->is_active,
-            'description'    => $request->description,
+            'is_active' => $request->is_active,
+            'description' => $request->description,
         ]);
 
         if ($request->hasFile('images')) {
