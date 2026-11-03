@@ -8,29 +8,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Design Tokens FutsalHub (Ref: Spesifikasi 9.A)
+        // Design Tokens FutsalHub - Dark Mode (Adem & Gak Bikin Sakit Mata)
         action: {
-          primary: '#15803D',       // green-700 (Kontras AA compliant)
-          'primary-hover': '#166534', // green-800
+          primary: '#10B981',       // emerald-500 (Hijau menyala di bg gelap)
+          'primary-hover': '#059669', // emerald-600
         },
         surface: {
-          page: '#F8FAFC',          // slate-50
-          card: '#FFFFFF',          // white
+          page: '#0F172A',          // slate-900 (Background utama sangat gelap)
+          card: '#1E293B',          // slate-800 (Kartu & container gelap soft)
         },
         text: {
-          default: '#0F172A',       // slate-900
-          muted: '#475569',         // slate-600
+          default: '#F8FAFC',       // slate-50 (Teks utama terang soft)
+          muted: '#94A3B8',         // slate-400 (Teks abu-abu sedang)
         },
         border: {
-          default: '#E2E8F0',       // slate-200
+          default: '#334155',       // slate-700 (Garis batas tegas tapi teratur)
         },
-        // Status Badge Tokens
+        // Status Badge Tokens (Disesuaikan untuk Mode Gelap)
         status: {
-          warning: { bg: '#FEF3C7', text: '#92400E' }, // amber-100 / amber-800
-          success: { bg: '#DCFCE7', text: '#166534' }, // green-100 / green-800
-          danger:  { bg: '#FEE2E2', text: '#991B1B' }, // red-100 / red-800
-          info:    { bg: '#E0F2FE', text: '#075985' }, // sky-100 / sky-800
-          neutral: { bg: '#F1F5F9', text: '#334155' }, // slate-100 / slate-700
+          warning: { bg: '#451A03', text: '#FCD34D' }, // amber dark
+          success: { bg: '#064E3B', text: '#6EE7B7' }, // green dark
+          danger:  { bg: '#450A0A', text: '#FCA5A5' }, // red dark
+          info:    { bg: '#0C4A6E', text: '#7DD3FC' }, // sky dark
+          neutral: { bg: '#334155', text: '#94A3B8' }, // slate dark
         }
       }
     },
