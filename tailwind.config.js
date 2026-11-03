@@ -8,29 +8,29 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Design Tokens FutsalHub - Dark Mode (Adem & Gak Bikin Sakit Mata)
+        // Design Tokens FutsalHub Original (Light Mode Compliant)
         action: {
-          primary: '#10B981',       // emerald-500 (Hijau menyala di bg gelap)
-          'primary-hover': '#059669', // emerald-600
+          primary: '#15803D',       // green-700
+          'primary-hover': '#166534', // green-800
         },
         surface: {
-          page: '#0F172A',          // slate-900 (Background utama sangat gelap)
-          card: '#1E293B',          // slate-800 (Kartu & container gelap soft)
+          page: '#F1F5F9',          // slate-100 (Lebih soft, tidak silau dibanding slate-50)
+          card: '#FFFFFF',          // white
         },
         text: {
-          default: '#F8FAFC',       // slate-50 (Teks utama terang soft)
-          muted: '#94A3B8',         // slate-400 (Teks abu-abu sedang)
+          default: '#0F172A',       // slate-900
+          muted: '#475569',         // slate-600
         },
         border: {
-          default: '#334155',       // slate-700 (Garis batas tegas tapi teratur)
+          default: '#E2E8F0',       // slate-200
         },
-        // Status Badge Tokens (Disesuaikan untuk Mode Gelap)
+        // Status Badge Tokens
         status: {
-          warning: { bg: '#451A03', text: '#FCD34D' }, // amber dark
-          success: { bg: '#064E3B', text: '#6EE7B7' }, // green dark
-          danger:  { bg: '#450A0A', text: '#FCA5A5' }, // red dark
-          info:    { bg: '#0C4A6E', text: '#7DD3FC' }, // sky dark
-          neutral: { bg: '#334155', text: '#94A3B8' }, // slate dark
+          warning: { bg: '#FEF3C7', text: '#92400E' },
+          success: { bg: '#DCFCE7', text: '#166534' },
+          danger:  { bg: '#FEE2E2', text: '#991B1B' },
+          info:    { bg: '#E0F2FE', text: '#075985' },
+          neutral: { bg: '#F1F5F9', text: '#334155' },
         }
       }
     },
