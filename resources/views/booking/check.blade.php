@@ -1,21 +1,22 @@
 <x-layouts.app title="Cek Status Booking - FutsalHub">
     <div class="max-w-xl mx-auto space-y-6">
-        <div class="bg-surface-card p-6 sm:p-8 rounded-2xl border border-border-default shadow-xs space-y-6">
+        <div class="bg-surface-card p-6 sm:p-8 rounded-3xl border border-border-default shadow-xs space-y-6">
             <div class="space-y-1">
-                <h2 class="text-lg font-bold text-text-default">Cek Status Booking</h2>
-                <p class="text-xs text-text-muted">Masukkan Kode Booking untuk melihat status atau mengunggah bukti transfer.</p>
+                <h2 class="text-lg font-black text-text-default">Cek Status & Transfer Booking</h2>
+                <p class="text-xs text-text-muted">Masukkan Kode Booking untuk memeriksa status, info rekening GOR, atau mengunggah bukti bayar.</p>
             </div>
 
-            <!-- Form Pencarian Kode Booking -->
+            <!-- Form Cari Kode Booking -->
             <form method="GET" action="{{ route('booking.check') }}" class="flex flex-col sm:flex-row gap-2.5">
-                <input type="text" name="code" value="{{ request('code') }}" placeholder="Contoh: FTS-XXXXX" required class="flex-1 px-4 py-2.5 text-sm rounded-xl border border-border-default uppercase font-mono font-bold focus:ring-2 focus:ring-action-primary outline-none bg-surface-card">
-                <button type="submit" class="px-6 py-2.5 bg-action-primary hover:bg-action-primary-hover text-white text-xs font-bold rounded-xl transition-colors shadow-xs">Cari Booking</button>
+                <input type="text" name="code" value="{{ request('code') }}" placeholder="Contoh: FTS-XXXXX" required class="flex-1 px-4 py-2.5 text-xs rounded-xl border border-border-default uppercase font-mono font-bold focus:ring-2 focus:ring-action-primary outline-none bg-surface-card">
+                <button type="submit" class="px-6 py-2.5 bg-action-primary hover:bg-action-primary-hover text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer">Cari Booking</button>
             </form>
 
             @if(isset($booking))
                 <div class="border-t border-border-default pt-6 space-y-5">
-                    <!-- Status Header -->
-                    <div class="flex items-center justify-between p-4 bg-surface-page rounded-xl border border-border-default">
+
+                    <!-- Header Kode & Status Badge -->
+                    <div class="flex items-center justify-between p-4 bg-surface-page rounded-2xl border border-border-default">
                         <div>
                             <span class="block text-[10px] uppercase tracking-wider font-semibold text-text-muted">Kode Booking</span>
                             <span class="font-mono font-black text-xl text-action-primary tracking-wider">{{ $booking->booking_code }}</span>
@@ -23,15 +24,58 @@
                         <x-status-badge :status="$booking->payment_status" />
                     </div>
 
+                    <!-- REKENING TUJUAN TRANSFER GOR -->
+                    @if($booking->payment_method === 'transfer')
+                        <div class="bg-action-primary/5 border border-action-primary/20 p-4 rounded-2xl text-left space-y-3">
+                            <div class="flex items-center justify-between border-b border-action-primary/10 pb-2">
+                                <span class="text-xs font-bold text-action-primary uppercase tracking-wider">Tujuan Transfer Pembayaran</span>
+                                <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-action-primary text-white">Transfer Bank</span>
+                            </div>
+
+                            @if($booking->field->gor->bank_name && $booking->field->gor->bank_account_number)
+                                <div class="space-y-1.5 text-xs">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-text-muted font-medium">Nama Bank:</span>
+                                        <strong class="text-text-default font-bold uppercase">{{ $booking->field->gor->bank_name }}</strong>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-text-muted font-medium">No. Rekening:</span>
+                                        <span class="font-mono font-bold text-base text-action-primary select-all">{{ $booking->field->gor->bank_account_number }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-text-muted font-medium">Atas Nama:</span>
+                                        <strong class="text-text-default font-semibold">{{ $booking->field->gor->bank_account_holder ?? '-' }}</strong>
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-xs text-text-muted italic">Hubungi pihak GOR untuk konfirmasi rincian transfer.</p>
+                            @endif
+                        </div>
+                    @endif
+
+                    <!-- ALAMAT & GOOGLE MAPS GOR -->
+                    <div class="bg-surface-page p-4 rounded-2xl border border-border-default text-left space-y-2">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted block">Alamat GOR & Lokasi</span>
+                        <p class="text-xs font-bold text-text-default">{{ $booking->field->gor->name }}</p>
+                        <p class="text-xs text-text-muted leading-relaxed">{{ $booking->field->gor->address }}</p>
+
+                        @if($booking->field->gor->maps_url)
+                            <a href="{{ $booking->field->gor->maps_url }}" target="_blank" class="inline-flex items-center gap-1 text-xs font-bold text-action-primary hover:underline pt-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                Petunjuk Arah di Google Maps &rarr;
+                            </a>
+                        @endif
+                    </div>
+
                     <!-- Detail Booking -->
-                    <div class="text-xs space-y-2 text-text-muted bg-surface-card p-4 rounded-xl border border-border-default">
+                    <div class="text-xs space-y-2 text-text-muted bg-surface-card p-4 rounded-2xl border border-border-default">
                         <div class="flex justify-between border-b border-border-default/60 pb-1.5">
                             <span>Nama Pemesan</span>
                             <strong class="text-text-default font-semibold">{{ $booking->customer_name }} ({{ $booking->customer_phone }})</strong>
                         </div>
                         <div class="flex justify-between border-b border-border-default/60 pb-1.5">
-                            <span>GOR & Lapangan</span>
-                            <strong class="text-text-default font-semibold">{{ $booking->field->gor->name }} - {{ $booking->field->name }}</strong>
+                            <span>Lapangan</span>
+                            <strong class="text-text-default font-semibold">{{ $booking->field->name }}</strong>
                         </div>
                         <div class="flex justify-between border-b border-border-default/60 pb-1.5">
                             <span>Tanggal Play</span>
@@ -43,14 +87,14 @@
                         </div>
                     </div>
 
-                    <!-- Bukti Transfer yang Sudah Di-upload -->
+                    <!-- Bukti Transfer Terunggah -->
                     @if($booking->proof_of_payment)
-                        <div class="space-y-2">
+                        <div class="space-y-2 text-left">
                             <label class="block text-xs font-bold text-text-default">Bukti Transfer Terunggah:</label>
-                            <div class="relative w-full max-h-72 overflow-hidden rounded-xl border border-border-default bg-surface-page flex items-center justify-center p-3">
-                                <img src="{{ asset('storage/' . $booking->proof_of_payment) }}" alt="Bukti Pembayaran" class="max-h-60 object-contain rounded-lg shadow-xs">
+                            <div class="relative w-full max-h-72 overflow-hidden rounded-2xl border border-border-default bg-surface-page flex items-center justify-center p-3">
+                                <img src="{{ asset('storage/' . $booking->proof_of_payment) }}" alt="Bukti Pembayaran" class="max-h-60 object-contain rounded-xl shadow-xs">
                             </div>
-                            <p class="text-[11px] text-text-muted text-center">Bukti transfer sedang dalam verifikasi staff/kasir GOR.</p>
+                            <p class="text-[11px] text-text-muted text-center">Bukti transfer sedang diverifikasi oleh Admin/Kasir GOR.</p>
                         </div>
                     @endif
 
@@ -58,7 +102,7 @@
                     @if($booking->payment_method === 'transfer' && ($booking->payment_status === 'pending' || $booking->payment_status === 'rejected'))
                         <form method="POST" action="{{ route('booking.upload_proof', $booking->id) }}" enctype="multipart/form-data"
                               x-data="{ imageUrl: null }"
-                              class="space-y-4 bg-surface-page p-4 rounded-xl border border-border-default">
+                              class="space-y-4 bg-surface-page p-4 rounded-2xl border border-border-default text-left">
                             @csrf
 
                             <div>
@@ -67,20 +111,18 @@
                                 </label>
                                 <input type="file" name="payment_proof" accept="image/jpeg,image/png,image/jpg" required
                                        @change="const file = $event.target.files[0]; if(file){ imageUrl = URL.createObjectURL(file) }"
-                                       class="block w-full text-xs text-text-muted file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-action-primary file:text-white hover:file:bg-action-primary-hover cursor-pointer">
+                                       class="block w-full text-xs text-text-muted file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-action-primary file:text-white hover:file:bg-action-primary-hover cursor-pointer">
                             </div>
 
-                            <!-- Live Preview Gambar Sebelum Dikirim -->
                             <template x-if="imageUrl">
                                 <div class="space-y-1.5">
-                                    <p class="text-[11px] font-semibold text-text-muted">Preview Gambar:</p>
-                                    <div class="w-full max-h-56 overflow-hidden rounded-lg border border-border-default bg-surface-card flex items-center justify-center p-2">
-                                        <img :src="imageUrl" class="max-h-48 object-contain rounded">
+                                    <div class="w-full max-h-56 overflow-hidden rounded-xl border border-border-default bg-surface-card flex items-center justify-center p-2">
+                                        <img :src="imageUrl" class="max-h-48 object-contain rounded-lg">
                                     </div>
                                 </div>
                             </template>
 
-                            <button type="submit" class="w-full py-2.5 bg-action-primary hover:bg-action-primary-hover text-white text-xs font-bold rounded-xl transition-colors shadow-xs">
+                            <button type="submit" class="w-full py-2.5 bg-action-primary hover:bg-action-primary-hover text-white text-xs font-bold rounded-xl transition-colors shadow-xs cursor-pointer">
                                 {{ $booking->proof_of_payment ? 'Perbarui Bukti Transfer' : 'Kirim Bukti Pembayaran' }}
                             </button>
                         </form>

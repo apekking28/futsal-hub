@@ -3,7 +3,6 @@
 
         <!-- Hero Section -->
         <div class="relative overflow-hidden bg-surface-card rounded-3xl border border-border-default p-6 sm:p-10 shadow-xs">
-            <!-- Decorative Accent Background -->
             <div class="absolute -top-12 -right-12 w-64 h-64 bg-action-primary/5 rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="relative z-10 max-w-2xl space-y-4">
@@ -20,81 +19,30 @@
                 <p class="text-xs sm:text-sm text-text-muted leading-relaxed">
                     Pilih slot jam yang tersedia secara langsung tanpa perlu mendaftar akun. Dapatkan Kode Booking instan dan bayar secara fleksibel lewat Transfer/QRIS atau Cash di lokasi.
                 </p>
-
-                <!-- Value Props / Feature Badges -->
-                <div class="grid grid-cols-3 gap-3 pt-2">
-                    <div class="p-3 rounded-2xl bg-surface-page border border-border-default text-center">
-                        <span class="block text-base sm:text-lg font-extrabold text-action-primary">100%</span>
-                        <span class="text-[10px] sm:text-xs font-semibold text-text-muted">Realtime Slot</span>
-                    </div>
-                    <div class="p-3 rounded-2xl bg-surface-page border border-border-default text-center">
-                        <span class="block text-base sm:text-lg font-extrabold text-action-primary">0 min</span>
-                        <span class="text-[10px] sm:text-xs font-semibold text-text-muted">Tanpa Login</span>
-                    </div>
-                    <div class="p-3 rounded-2xl bg-surface-page border border-border-default text-center">
-                        <span class="block text-base sm:text-lg font-extrabold text-action-primary">Instan</span>
-                        <span class="text-[10px] sm:text-xs font-semibold text-text-muted">Kode Booking</span>
-                    </div>
-                </div>
             </div>
         </div>
-
-        <!-- Header Ringkasan Lapangan (Jika Diarahkan dari Katalog dengan Query ?field=ID) -->
-        @if(isset($selectedFieldModel))
-            <div class="bg-surface-card p-4 sm:p-5 rounded-2xl border border-border-default flex items-center justify-between gap-4 shadow-xs">
-                <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-surface-page border border-border-default shrink-0">
-                        @if($selectedFieldModel->images && $selectedFieldModel->images->first())
-                            <img src="{{ asset('storage/' . $selectedFieldModel->images->first()->thumb_path) }}" alt="{{ $selectedFieldModel->name }}" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center text-text-muted text-[10px]">No Image</div>
-                        @endif
-                    </div>
-                    <div>
-                        <span class="text-xs font-semibold text-action-primary uppercase tracking-wider">{{ $selectedFieldModel->gor->name ?? '' }}</span>
-                        <h2 class="text-base sm:text-lg font-bold text-text-default">{{ $selectedFieldModel->name }}</h2>
-                        <p class="text-xs font-bold text-text-muted mt-0.5">Rp {{ number_format($selectedFieldModel->price_per_hour, 0, ',', '.') }} / jam</p>
-                    </div>
-                </div>
-                @if(Route::has('fields.show'))
-                    <a href="{{ route('fields.show', $selectedFieldModel->slug) }}" class="hidden sm:inline-flex px-3 py-1.5 text-xs font-semibold text-text-muted hover:text-text-default border border-border-default rounded-lg hover:bg-surface-page transition-colors">
-                        Lihat Detail
-                    </a>
-                @endif
-            </div>
-        @endif
 
         <!-- Form Booking Utama -->
         <form method="POST" action="{{ route('booking.store') }}" class="bg-surface-card p-5 sm:p-8 rounded-2xl border border-border-default shadow-xs space-y-8">
             @csrf
 
-            <!-- Section 1: Tanggal & Lapangan -->
-            <div class="space-y-4">
+            <!-- Section 1: Visual Card List Lapangan & Tanggal -->
+            <div class="space-y-5">
                 <h3 class="text-xs font-bold text-text-default uppercase tracking-wider border-b border-border-default pb-2">1. Pilih Lapangan & Tanggal</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Lapangan</label>
-                        <select name="field_id" x-model="selectedField" @change="fetchSlots()" class="w-full px-4 py-2.5 text-xs font-semibold rounded-xl border border-border-default bg-surface-card text-text-default outline-none focus:ring-2 focus:ring-action-primary focus:border-action-primary transition-all">
-                            @if(isset($fields) && count($fields) > 0)
-                                @foreach($fields as $field)
-                                    <option value="{{ $field->id }}">
-                                        {{ $field->gor->name ?? 'GOR' }} - {{ $field->name }} (Rp {{ number_format($field->price_per_hour, 0, ',', '.') }}/jam)
-                                    </option>
-                                @endforeach
-                            @else
-                                <option value="">Tidak ada lapangan tersedia</option>
-                            @endif
-                        </select>
-                    </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Tanggal Main</label>
-                        <input type="date" name="booking_date" min="{{ date('Y-m-d') }}" x-model="selectedDate" @change="fetchSlots()" class="w-full px-4 py-2.5 text-xs font-semibold rounded-xl border border-border-default bg-surface-card text-text-default outline-none focus:ring-2 focus:ring-action-primary focus:border-action-primary transition-all">
-                    </div>
+                <!-- COMPONENT LIST CARD LAPANGAN INTERAKTIF -->
+                <x-field-card-list :fields="$fields" :selectedFieldId="$selectedFieldId" />
+
+                <!-- Input Hidden untuk menangkap ID Lapangan terpilih dari Card -->
+                <input type="hidden" name="field_id" x-model="selectedField">
+
+                <div class="pt-2">
+                    <label class="block text-xs font-bold text-text-muted mb-1.5 uppercase">Tanggal Main</label>
+                    <input type="date" name="booking_date" min="{{ date('Y-m-d') }}" x-model="selectedDate" @change="fetchSlots()" class="w-full sm:max-w-xs px-4 py-2.5 text-xs font-semibold rounded-xl border border-border-default bg-surface-card text-text-default outline-none focus:ring-2 focus:ring-action-primary focus:border-action-primary transition-all">
                 </div>
             </div>
 
-            <!-- Section 2: Pemilihan Slot Jam -->
+            <!-- Section 2: Pemilihan Slot Jam (Sesuai Kode Sebelumnya) -->
             <div class="space-y-4">
                 <div class="flex items-center justify-between border-b border-border-default pb-2">
                     <h3 class="text-xs font-bold text-text-default uppercase tracking-wider">2. Pilih Jam Main</h3>
@@ -114,7 +62,7 @@
                     <p class="text-xs font-semibold text-text-muted">Memuat ketersediaan slot jam...</p>
                 </div>
 
-                <!-- Slots List (Item Alpine.js) -->
+                <!-- Slots List (Alpine.js) -->
                 <div x-show="!loading" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
                     <template x-for="item in slots" :key="item.time">
                         <button type="button"
@@ -125,7 +73,7 @@
                                     'bg-surface-card border-border-default hover:border-action-primary text-text-default': item.available && !selectedSlots.includes(item.time),
                                     'bg-surface-page border-border-default opacity-50 cursor-not-allowed text-text-muted': !item.available
                                 }"
-                                class="p-3 border rounded-xl flex flex-col items-center justify-center transition-all text-center group min-h-[64px]">
+                                class="p-3 border rounded-xl flex flex-col items-center justify-center transition-all text-center group min-h-[64px] cursor-pointer">
                             <span class="font-bold text-sm" x-text="item.time"></span>
                             <span class="text-[10px] font-semibold mt-0.5"
                                   :class="selectedSlots.includes(item.time) ? 'text-white' : (item.is_booked ? 'text-status-danger-text' : (item.is_past ? 'text-text-muted' : 'text-action-primary'))"
@@ -135,7 +83,6 @@
                     </template>
                 </div>
 
-                <!-- Hidden Input array untuk dikirim ke Backend -->
                 <template x-for="time in selectedSlots" :key="time">
                     <input type="hidden" name="slots[]" :value="time">
                 </template>
@@ -176,29 +123,11 @@
                 </div>
             </div>
 
-            <!-- Submit Button Desktop -->
+            <!-- Submit Button -->
             <button type="submit" :disabled="selectedSlots.length === 0" class="w-full py-3.5 bg-action-primary hover:bg-action-primary-hover disabled:opacity-50 text-white font-bold text-sm rounded-xl transition-all shadow-xs cursor-pointer disabled:cursor-not-allowed">
                 Lanjut Booking (<span x-text="selectedSlots.length"></span> Jam)
             </button>
         </form>
-
-        <!-- Sticky Summary Mobile Bar -->
-        <div x-show="selectedSlots.length > 0"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="translate-y-full opacity-0"
-             x-transition:enter-end="translate-y-0 opacity-100"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="translate-y-0 opacity-100"
-             x-transition:leave-end="translate-y-full opacity-0"
-             class="fixed bottom-0 left-0 right-0 bg-surface-card border-t border-border-default p-4 shadow-lg z-30 md:hidden flex items-center justify-between gap-4">
-            <div>
-                <p class="text-[11px] font-semibold text-text-muted">Total Jam Terpilih</p>
-                <p class="text-sm font-bold text-action-primary"><span x-text="selectedSlots.length"></span> Jam Dipilih</p>
-            </div>
-            <button type="button" @click="document.querySelector('form').requestSubmit()" class="px-5 py-2.5 bg-action-primary hover:bg-action-primary-hover text-white font-bold text-xs rounded-xl shadow-xs">
-                Selesaikan Booking
-            </button>
-        </div>
     </div>
 
     <script>
