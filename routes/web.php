@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BookingManagementController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DistrictManagementController;
 use App\Http\Controllers\Admin\FieldManagementController;
 use App\Http\Controllers\Admin\GorManagementController;
 use App\Http\Controllers\Admin\PermissionManagementController;
@@ -129,6 +130,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/permissions', [PermissionManagementController::class, 'store'])->name('permissions.store');
         Route::put('/permissions/{id}', [PermissionManagementController::class, 'update'])->name('permissions.update');
         Route::delete('/permissions/{id}', [PermissionManagementController::class, 'destroy'])->name('permissions.destroy');
+
+        // CRUD Manajemen District / Wilayah
+        Route::get('/districts', [DistrictManagementController::class, 'index'])->name('districts.index');
+        Route::post('/districts', [DistrictManagementController::class, 'store'])->name('districts.store');
+        Route::put('/districts/{id}', [DistrictManagementController::class, 'update'])->name('districts.update');
+        Route::delete('/districts/{id}', [DistrictManagementController::class, 'destroy'])->name('districts.destroy');
     });
 
 });
