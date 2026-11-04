@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon / Icon Tab Browser -->
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-icon.png') }}">
     <title>Login Staff - FutsalHub</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -39,10 +41,21 @@
             </div>
 
             <button type="submit"
-                class="w-full py-3 bg-action-primary hover:bg-action-primary-hover text-white font-bold text-sm rounded-xl transition-all shadow-sm">
+                class="w-full py-3 bg-action-primary hover:bg-action-primary-hover text-white font-bold text-sm rounded-xl transition-all shadow-sm cursor-pointer">
                 Masuk ke System
             </button>
         </form>
+
+        <!-- Tombol Kembali ke Halaman Utama dengan Style Button & Hover Keren -->
+        <div class="pt-2 border-t border-border-default">
+            <a href="{{ url('/') }}"
+                class="w-full py-2.5 px-4 bg-surface-page hover:bg-border-default border border-border-default text-text-default hover:text-action-primary font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Kembali ke Halaman Utama
+            </a>
+        </div>
     </div>
 
 </body>
