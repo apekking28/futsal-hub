@@ -51,7 +51,7 @@
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
         <!-- Component Topbar Modular -->
-        <x-layouts.admin-header :headerTitle="$headerTitle ?? 'Dashboard Admin'" />
+        <x-layouts.topbars.admin-header :headerTitle="$headerTitle ?? 'Dashboard Admin'" />
 
         <!-- Main Body Content Container -->
         <main class="p-4 sm:p-6 flex-1 overflow-y-auto overflow-x-hidden">
