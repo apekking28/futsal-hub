@@ -21,7 +21,7 @@
             </div>
             <form method="POST" action="{{ route('admin.bookings.checkin') }}" class="flex flex-col sm:flex-row w-full md:w-auto gap-2">
                 @csrf
-                <input type="text" name="booking_code" placeholder="Kode Booking (cth: FTS-XXXX)" required class="w-full sm:w-64 px-3.5 py-2 text-xs rounded-xl border border-border-default uppercase font-mono font-bold outline-none focus:ring-2 focus:ring-action-primary bg-surface-card">
+                <input type="text" name="booking_code" placeholder="Kode Booking (cth: FTS-XXXX)" required class="w-full sm:w-64 px-3.5 py-2 text-xs rounded-xl border border-border-default uppercase font-mono font-bold outline-none focus:ring-2 focus:ring-action-primary bg-surface-card text-text-default">
                 <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-action-primary hover:bg-action-primary-hover text-white text-xs font-bold rounded-xl transition-colors whitespace-nowrap text-center shadow-xs cursor-pointer">
                     Verifikasi & Check-In
                 </button>
@@ -31,48 +31,69 @@
         <!-- Filter & Search Bar -->
         <div class="flex flex-col sm:flex-row justify-between gap-3">
             <form method="GET" action="{{ route('admin.bookings.index') }}" class="flex flex-col sm:flex-row flex-1 gap-2">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Kode Booking / Nama / HP..." class="w-full sm:max-w-xs px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none focus:ring-2 focus:ring-action-primary bg-surface-card">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Kode Booking / Nama / HP..." class="w-full sm:max-w-xs px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none focus:ring-2 focus:ring-action-primary bg-surface-card text-text-default">
                 <select name="status" onchange="this.form.submit()" class="w-full sm:w-auto px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none bg-surface-card font-semibold text-text-default">
                     <option value="">Semua Status Bayar</option>
                     <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
                     <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Disetujui</option>
                     <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                    <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                 </select>
+                @if(request()->hasAny(['search', 'status']))
+                    <a href="{{ route('admin.bookings.index') }}" class="px-3 py-2 text-xs font-bold text-status-danger-text hover:underline flex items-center">
+                        Reset Filter
+                    </a>
+                @endif
             </form>
         </div>
 
         <!-- TABEL STABIL RESPONSIF -->
-        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden">
+        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden space-y-4">
             <div class="overflow-x-auto max-w-full">
-                <table class="w-full text-left border-collapse min-w-[850px] table-fixed">
+                <table class="w-full text-left border-collapse min-w-[1050px] table-fixed">
                     <thead>
                         <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted sticky top-0 z-10">
-                            <th class="p-4 w-48">Kode & Pemesan</th>
-                            <th class="p-4 w-44">Lapangan</th>
-                            <th class="p-4 w-40">Tanggal & Jam</th>
-                            <th class="p-4 w-44">Total & Metode</th>
-                            <th class="p-4 w-48">Status Bayar / Booking</th>
-                            <th class="p-4 w-36 text-right">Aksi</th>
+                            <!-- 1. Header Nomor Urut -->
+                            <th class="p-4 w-14 text-center">No</th>
+                            <th class="p-4 w-44">Kode & Pemesan</th>
+                            <th class="p-4 w-40">Lapangan</th>
+                            <th class="p-4 w-36">Tanggal Main</th>
+                            <th class="p-4 w-40">Total & Metode</th>
+                            <th class="p-4 w-44">Status Bayar / Booking</th>
+                            <th class="p-4 w-44">Riwayat Waktu</th>
+                            <th class="p-4 w-32 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border-default text-sm">
                         @forelse($bookings as $booking)
                             <tr class="hover:bg-surface-page/50 transition-colors">
+                                <!-- 2. Nomor Urut Dynamic Pagination -->
+                                <td class="p-4 text-center font-bold text-xs text-text-muted">
+                                    {{ $loop->iteration + $bookings->firstItem() - 1 }}
+                                </td>
+
+                                <!-- Kode & Pemesan -->
                                 <td class="p-4">
                                     <p class="font-mono font-bold text-action-primary text-xs truncate">{{ $booking->booking_code }}</p>
                                     <p class="font-semibold text-text-default text-xs truncate">{{ $booking->customer_name }}</p>
                                     <p class="text-[11px] text-text-muted truncate">{{ $booking->customer_phone }}</p>
                                 </td>
+
+                                <!-- Lapangan -->
                                 <td class="p-4">
-                                    <p class="font-semibold text-xs truncate">{{ $booking->field->gor->name }}</p>
-                                    <p class="text-xs text-text-muted truncate">{{ $booking->field->name }}</p>
+                                    <p class="font-semibold text-xs truncate">{{ $booking->field->gor->name ?? 'GOR' }}</p>
+                                    <p class="text-xs text-text-muted truncate">{{ $booking->field->name ?? 'Lapangan' }}</p>
                                 </td>
+
+                                <!-- Tanggal Main & Jam -->
                                 <td class="p-4">
                                     <p class="font-bold text-xs">{{ \Carbon\Carbon::parse($booking->booking_date)->format('d M Y') }}</p>
                                     <p class="text-[11px] text-text-muted truncate">
                                         {{ $booking->details->pluck('start_time')->map(fn($t) => substr($t, 0, 5))->join(', ') }}
                                     </p>
                                 </td>
+
+                                <!-- Total & Metode -->
                                 <td class="p-4 space-y-1">
                                     <p class="font-bold text-xs text-action-primary">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</p>
                                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -89,6 +110,8 @@
                                         @endif
                                     </div>
                                 </td>
+
+                                <!-- Status Bayar / Booking -->
                                 <td class="p-4 space-y-1">
                                     <div><x-status-badge :status="$booking->payment_status" /></div>
                                     <div><span class="px-2.5 py-0.5 text-[10px] font-bold rounded-lg bg-surface-page border border-border-default uppercase text-text-muted">{{ $booking->booking_status }}</span></div>
@@ -104,6 +127,20 @@
                                         </p>
                                     @endif
                                 </td>
+
+                                <!-- Tanggal Dibuat & Tanggal Di-update -->
+                                <td class="p-4 space-y-1 text-xs">
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Dibuat:</span>
+                                        <span class="font-medium text-text-default">{{ $booking->created_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Di-update:</span>
+                                        <span class="font-medium text-text-default">{{ $booking->updated_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                </td>
+
+                                <!-- Tombol Aksi -->
                                 <td class="p-4 text-right space-x-1 whitespace-nowrap">
                                     @if($booking->payment_status === 'pending')
                                         <form method="POST" action="{{ route('admin.bookings.approve', $booking->id) }}" class="inline-block">
@@ -131,12 +168,19 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="p-8 text-center text-xs text-text-muted">Tidak ada data booking ditemukan.</td>
+                                <td colspan="8" class="p-8 text-center text-xs text-text-muted">Tidak ada data booking ditemukan.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            <!-- 3. PAGINATION ANGKA LARAVEL DEFAULT -->
+            @if(method_exists($bookings, 'hasPages') && $bookings->hasPages())
+                <div class="p-4 border-t border-border-default overflow-x-auto">
+                    {{ $bookings->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- Pop-up Modal 1: Preview Bukti Transfer -->

@@ -19,9 +19,30 @@ class GorManagementController extends Controller
         $this->imageService = $imageService;
     }
 
-    public function index()
+    /**
+     * Tampilan Daftar GOR (Filter, Search, & Pagination)
+     */
+    public function index(Request $request)
     {
-        $gors = Gor::with(['district', 'fields', 'images'])->latest()->get();
+        $query = Gor::with(['district', 'fields', 'images']);
+
+        // Filter Pencarian (Nama GOR, Alamat, atau Telepon)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('address', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Status Operasional
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status);
+        }
+
+        // Pagination 10 item per halaman + query string filter
+        $gors = $query->latest()->paginate(10)->withQueryString();
         $districts = District::all();
 
         return view('admin.gors.index', compact('gors', 'districts'));

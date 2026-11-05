@@ -47,25 +47,49 @@
             </button>
         </div>
 
+        <!-- Filter & Search Bar -->
+        <div class="flex flex-col sm:flex-row justify-between gap-3">
+            <form method="GET" action="{{ route('admin.gors.index') }}" class="flex flex-col sm:flex-row flex-1 gap-2">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama GOR / Alamat / Telepon..." class="w-full sm:max-w-xs px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none focus:ring-2 focus:ring-action-primary bg-surface-card text-text-default">
+                <select name="status" onchange="this.form.submit()" class="w-full sm:w-auto px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none bg-surface-card font-semibold text-text-default">
+                    <option value="">Semua Status Operasional</option>
+                    <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Aktif</option>
+                    <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Nonaktif</option>
+                </select>
+                @if(request()->hasAny(['search', 'status']))
+                    <a href="{{ route('admin.gors.index') }}" class="px-3 py-2 text-xs font-bold text-status-danger-text hover:underline flex items-center">
+                        Reset Filter
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <!-- TABEL GOR LENGKAP -->
-        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden">
+        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden space-y-4">
             <div class="overflow-x-auto max-w-full">
-                <table class="w-full text-left border-collapse min-w-[1100px] table-fixed">
+                <table class="w-full text-left border-collapse min-w-[1150px] table-fixed">
                     <thead>
-                        <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted">
+                        <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted sticky top-0 z-10">
+                            <!-- 1. Header Nomor Diganti 'No' -->
+                            <th class="p-4 w-14 text-center">No</th>
                             <th class="p-4 w-16">Foto</th>
                             <th class="p-4 w-48">Nama & Wilayah GOR</th>
-                            <th class="p-4 w-52">Alamat & Maps</th>
-                            <th class="p-4 w-40">Jam Operasional</th>
-                            <th class="p-4 w-48">Info Bank / Rekening</th>
-                            <th class="p-4 w-32">Kontak</th>
+                            <th class="p-4 w-48">Alamat & Maps</th>
+                            <th class="p-4 w-36">Jam Operasional</th>
+                            <th class="p-4 w-44">Info Bank / Rekening</th>
                             <th class="p-4 w-28">Status</th>
-                            <th class="p-4 w-44 text-right">Aksi</th>
+                            <th class="p-4 w-40">Riwayat Waktu</th>
+                            <th class="p-4 w-40 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border-default text-sm">
                         @forelse($gors as $gor)
                             <tr class="hover:bg-surface-page/50 transition-colors">
+                                <!-- 2. Nomor Urut Dinamis -->
+                                <td class="p-4 text-center font-bold text-xs text-text-muted">
+                                    {{ $loop->iteration + $gors->firstItem() - 1 }}
+                                </td>
+
                                 <!-- Preview Image / Cover -->
                                 <td class="p-4">
                                     <div class="w-12 h-12 rounded-lg bg-surface-page border border-border-default overflow-hidden flex items-center justify-center shrink-0">
@@ -76,13 +100,15 @@
                                         @endif
                                     </div>
                                 </td>
+
                                 <!-- Nama & Wilayah GOR -->
                                 <td class="p-4">
                                     <p class="font-bold text-text-default text-xs truncate">{{ $gor->name }}</p>
                                     <span class="inline-block mt-1 px-2 py-0.5 rounded-lg bg-surface-page border border-border-default text-[10px] font-semibold text-text-muted">
-                                        {{ $gor->district->name }}
+                                        {{ $gor->district->name ?? 'Wilayah' }}
                                     </span>
                                 </td>
+
                                 <!-- Alamat & Maps -->
                                 <td class="p-4">
                                     <p class="text-[11px] text-text-default leading-tight line-clamp-2" title="{{ $gor->address }}">{{ $gor->address }}</p>
@@ -92,6 +118,7 @@
                                         </a>
                                     @endif
                                 </td>
+
                                 <!-- Jam Buka & Lapangan -->
                                 <td class="p-4">
                                     <p class="font-mono text-xs text-text-default font-semibold">
@@ -99,6 +126,7 @@
                                     </p>
                                     <p class="text-[11px] text-action-primary font-bold mt-0.5">{{ $gor->fields->count() }} Lapangan Tersedia</p>
                                 </td>
+
                                 <!-- Info Bank -->
                                 <td class="p-4">
                                     @if($gor->bank_name && $gor->bank_account_number)
@@ -108,9 +136,8 @@
                                         <span class="text-[11px] text-text-muted italic">Belum diset</span>
                                     @endif
                                 </td>
-                                <!-- Kontak -->
-                                <td class="p-4 font-mono text-xs whitespace-nowrap">{{ $gor->phone_number }}</td>
-                                <!-- Status -->
+
+                                <!-- Status Operasional -->
                                 <td class="p-4 whitespace-nowrap">
                                     @if($gor->is_active)
                                         <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-[#DCFCE7] text-[#166534]">Aktif</span>
@@ -118,6 +145,19 @@
                                         <span class="px-2.5 py-1 text-[10px] font-bold rounded-full bg-[#FEE2E2] text-[#991B1B]">Nonaktif</span>
                                     @endif
                                 </td>
+
+                                <!-- Tanggal Dibuat & Tanggal Di-update -->
+                                <td class="p-4 space-y-1 text-xs">
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Dibuat:</span>
+                                        <span class="font-medium text-text-default">{{ $gor->created_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Di-update:</span>
+                                        <span class="font-medium text-text-default">{{ $gor->updated_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                </td>
+
                                 <!-- Aksi -->
                                 <td class="p-4 text-right space-x-1 whitespace-nowrap">
                                     <!-- Kelola Galeri Foto -->
@@ -158,12 +198,19 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="p-8 text-center text-xs text-text-muted">Belum ada GOR terdaftar.</td>
+                                <td colspan="9" class="p-8 text-center text-xs text-text-muted">Belum ada GOR terdaftar.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            <!-- 3. PAGINATION ANGKA LARAVEL DEFAULT -->
+            @if(method_exists($gors, 'hasPages') && $gors->hasPages())
+                <div class="p-4 border-t border-border-default overflow-x-auto">
+                    {{ $gors->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- MODAL FORM (Tambah / Edit GOR) -->
@@ -233,15 +280,15 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             <div>
                                 <label class="block text-[11px] font-semibold text-text-muted mb-1">Nama Bank</label>
-                                <input type="text" name="bank_name" x-model="form.bank_name" placeholder="BCA / Mandiri" class="w-full px-3 py-1.5 text-xs rounded-lg border border-border-default outline-none bg-surface-card">
+                                <input type="text" name="bank_name" x-model="form.bank_name" placeholder="BCA / Mandiri" class="w-full px-3 py-1.5 text-xs rounded-lg border border-border-default outline-none bg-surface-card text-text-default">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-text-muted mb-1">No. Rekening</label>
-                                <input type="text" name="bank_account_number" x-model="form.bank_account_number" placeholder="1234567890" class="w-full px-3 py-1.5 text-xs rounded-lg border border-border-default outline-none bg-surface-card">
+                                <input type="text" name="bank_account_number" x-model="form.bank_account_number" placeholder="1234567890" class="w-full px-3 py-1.5 text-xs rounded-lg border border-border-default outline-none bg-surface-card text-text-default">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-text-muted mb-1">Atas Nama</label>
-                                <input type="text" name="bank_account_holder" x-model="form.bank_account_holder" placeholder="PT Futsal Indonesia" class="w-full px-3 py-1.5 text-xs rounded-lg border border-border-default outline-none bg-surface-card">
+                                <input type="text" name="bank_account_holder" x-model="form.bank_account_holder" placeholder="PT Futsal Indonesia" class="w-full px-3 py-1.5 text-xs rounded-lg border border-border-default outline-none bg-surface-card text-text-default">
                             </div>
                         </div>
                     </div>
@@ -267,7 +314,7 @@
             </div>
         </div>
 
-        <!-- MODAL GALERI FOTO GOR (Form Perbaikan Upload) -->
+        <!-- MODAL GALERI FOTO GOR -->
         <div x-show="showGalleryModal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" x-cloak>
             <div class="bg-surface-card rounded-2xl max-w-2xl w-full p-6 space-y-4 border border-border-default shadow-xl max-h-[90vh] overflow-y-auto" @click.away="showGalleryModal = false">
                 <div class="flex justify-between items-center border-b border-border-default pb-3">
@@ -278,7 +325,7 @@
                     <button @click="showGalleryModal = false" class="text-text-muted hover:text-text-default font-bold text-base cursor-pointer">&times;</button>
                 </div>
 
-                <!-- Form Upload Foto Tambahan (Diarahkan ke route khusus storeImages) -->
+                <!-- Form Upload Foto Tambahan -->
                 <form :action="'/admin/gors/' + (currentGor ? currentGor.id : '') + '/images'" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 bg-surface-page p-3 rounded-xl border border-border-default">
                     @csrf
                     <input type="file" name="images[]" multiple accept="image/*" required class="flex-1 text-xs text-text-muted file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-action-primary file:text-white cursor-pointer">

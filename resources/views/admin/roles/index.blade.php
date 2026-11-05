@@ -35,32 +35,57 @@
             </button>
         </div>
 
+        <!-- Filter & Search Bar -->
+        <div class="flex flex-col sm:flex-row justify-between gap-3">
+            <form method="GET" action="{{ route('admin.roles.index') }}" class="flex flex-col sm:flex-row flex-1 gap-2">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama Role..." class="w-full sm:max-w-xs px-3.5 py-2 text-xs rounded-xl border border-border-default outline-none focus:ring-2 focus:ring-action-primary bg-surface-card text-text-default">
+                @if(request()->has('search'))
+                    <a href="{{ route('admin.roles.index') }}" class="px-3 py-2 text-xs font-bold text-status-danger-text hover:underline flex items-center">
+                        Reset Filter
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <!-- TABEL ROLES -->
-        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden">
+        <div class="bg-surface-card border border-border-default rounded-xl shadow-xs overflow-hidden space-y-4">
             <div class="overflow-x-auto max-w-full">
-                <table class="w-full text-left border-collapse min-w-[850px] table-fixed">
+                <table class="w-full text-left border-collapse min-w-[950px] table-fixed">
                     <thead>
-                        <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted">
+                        <tr class="bg-surface-page border-b border-border-default text-xs font-bold uppercase text-text-muted sticky top-0 z-10">
+                            <!-- 1. Header Nomor Diganti 'No' -->
+                            <th class="p-4 w-14 text-center">No</th>
                             <th class="p-4 w-44">Nama Role</th>
                             <th class="p-4 w-32">Total Pengguna</th>
-                            <th class="p-4 w-96">Izin Akses Tercentang (Permissions)</th>
+                            <th class="p-4 w-80">Izin Akses Tercentang (Permissions)</th>
+                            <th class="p-4 w-44">Riwayat Waktu</th>
                             <th class="p-4 w-36 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border-default text-sm">
                         @forelse($roles as $role)
                             <tr class="hover:bg-surface-page/50 transition-colors">
+                                <!-- 2. Nomor Urut Dinamis -->
+                                <td class="p-4 text-center font-bold text-xs text-text-muted">
+                                    {{ $loop->iteration + $roles->firstItem() - 1 }}
+                                </td>
+
+                                <!-- Nama Role -->
                                 <td class="p-4">
                                     <p class="font-bold text-text-default text-xs uppercase">{{ $role->name }}</p>
                                     @if(in_array($role->name, ['super-admin', 'admin-gor', 'kasir']))
                                         <span class="inline-block mt-0.5 text-[9px] font-bold text-action-primary bg-action-primary/10 px-2 py-0.5 rounded-full">System Core Role</span>
                                     @endif
                                 </td>
+
+                                <!-- Total Pengguna -->
                                 <td class="p-4 whitespace-nowrap">
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-surface-page border border-border-default">
+                                    <span class="px-2.5 py-1 text-xs font-bold rounded-lg bg-surface-page border border-border-default text-text-default">
                                         {{ $role->users_count }} User
                                     </span>
                                 </td>
+
+                                <!-- Permissions -->
                                 <td class="p-4">
                                     <div class="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
                                         @if($role->name === 'super-admin')
@@ -78,6 +103,20 @@
                                         @endif
                                     </div>
                                 </td>
+
+                                <!-- Tanggal Dibuat & Tanggal Di-update -->
+                                <td class="p-4 space-y-1 text-xs">
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Dibuat:</span>
+                                        <span class="font-medium text-text-default">{{ $role->created_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[10px] font-semibold text-text-muted block">Di-update:</span>
+                                        <span class="font-medium text-text-default">{{ $role->updated_at->format('d/m/Y H:i') }}</span>
+                                    </div>
+                                </td>
+
+                                <!-- Aksi -->
                                 <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
                                     <button @click="showModal = true; editMode = true; form = {
                                                 id: {{ $role->id }},
@@ -102,12 +141,19 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="p-8 text-center text-xs text-text-muted">Belum ada role terdaftar.</td>
+                                <td colspan="6" class="p-8 text-center text-xs text-text-muted">Belum ada role terdaftar.</td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
+            <!-- 3. PAGINATION ANGKA LARAVEL DEFAULT -->
+            @if(method_exists($roles, 'hasPages') && $roles->hasPages())
+                <div class="p-4 border-t border-border-default overflow-x-auto">
+                    {{ $roles->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- MODAL CHECKLIST PERMISSION PER MODUL -->
@@ -176,7 +222,7 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-3 border-t border-border-default">
-                        <button type="button" @click="showModal = false" class="px-4 py-2 text-xs font-bold bg-surface-page rounded-xl border border-border-default hover:bg-border-default transition-colors cursor-pointer">Batal</button>
+                        <button type="button" @click="showModal = false" class="px-4 py-2 text-xs font-bold bg-surface-page rounded-xl border border-border-default hover:bg-border-default text-text-default transition-colors cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 text-xs font-bold bg-action-primary hover:bg-action-primary-hover text-white rounded-xl shadow-xs transition-colors cursor-pointer" x-text="editMode ? 'Simpan Hak Akses' : 'Tambah Role'"></button>
                     </div>
                 </form>

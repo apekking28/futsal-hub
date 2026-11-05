@@ -10,11 +10,10 @@ use Illuminate\Support\Facades\Auth;
 class BookingManagementController extends Controller
 {
     /**
-     * Daftar Transaksi Booking (Filter by Status)
+     * Daftar Transaksi Booking (Filter by Status & Pagination)
      */
     public function index(Request $request)
     {
-
         $user = Auth::user();
 
         $query = Booking::with(['field.gor', 'details']);
@@ -26,7 +25,7 @@ class BookingManagementController extends Controller
             });
         }
 
-        // Filter Pencarian
+        // Filter Pencarian (Kode Booking / Nama / No HP)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -41,7 +40,8 @@ class BookingManagementController extends Controller
             $query->where('payment_status', $request->status);
         }
 
-        $bookings = $query->latest()->get();
+        // Pagination 10 item per halaman + membawa query string filter
+        $bookings = $query->latest()->paginate(10)->withQueryString();
 
         return view('admin.bookings.index', compact('bookings'));
     }
